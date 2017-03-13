@@ -49,7 +49,7 @@ function getDataTimer () {
       console.log('current time : ' + currentTime)
       const res = JSON.parse(response.body)
       for (const data in res) {
-        console.log(`setting time[ ${count++} ] : ${res[data].hookTime}, hook term: ${(Number(res[data].hookTerm === 0)) ? 'no term' : res[data].hookTerm}`)
+        console.log(`setting time[ ${count++} ] : ${res[data].hookTime}, hook term: ${(res[data].hookTerm === 0) ? 'no term' : res[data].hookTerm}`)
         if (currentTime === res[data].hookTime || checkHookTerm(currentTime, res[data].hookTime, res[data].hookTerm)) {
           sendMessage(res[data].id, res[data].name, res[data].image, res[data].data)
         }
