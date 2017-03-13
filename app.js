@@ -45,7 +45,7 @@ function getDataTimer () {
     } else {
       let count = 0
       const date = new Date()
-      const currentTime = (date.getHours() === 0 ? ('00:') : date.getHours() + ':') + date.getMinutes()
+      const currentTime = (date.getHours() <= 9 ? '0' : '') + date.getHours() + ':' + (date.getMinutes() <= 9 ? '0' : '') + date.getMinutes()
       console.log('current time : ' + currentTime)
       const res = JSON.parse(response.body)
       for (const data in res) {
