@@ -50,13 +50,27 @@ function getDataTimer () {
       const res = JSON.parse(response.body)
       for (const data in res) {
         console.log(`setting time[ ${count++} ] : ${res[data].hookTime}, hook term: ${(res[data].hookTerm === '0') ? 'no term' : res[data].hookTerm}`)
-        if (currentTime === res[data].hookTime || checkHookTerm(currentTime, res[data].hookTime, res[data].hookTerm)) {
-          sendMessage(res[data].id, res[data].name, res[data].image, res[data].data)
+        if (checkTimeToHome(date)) {
+          if (currentTime === res[data].hookTime || checkHookTerm(currentTime, res[data].hookTime, res[data].hookTerm)) {
+            sendMessage(res[data].id, res[data].name, res[data].image, res[data].data)
+          }
         }
       }
       console.log('\n=========================\n')
     }
   })
+}
+
+function checkTimeToHome (date) {
+  if (date.getHours() > 19 || date.getHours() < 10) { // Off work
+    console.log('<<<    Today work was done.    >>>')
+    return false
+  }
+  if (date.getDay() === 0 || date.getDay() === 6) { // weekends
+    console.log('<<<    Today is weekends.    >>>')
+    return false
+  }
+  return true
 }
 
 function checkHookTerm (currentTime, hookTime, hookTerm) {
