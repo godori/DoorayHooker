@@ -1,6 +1,7 @@
 import express from 'express'
 import bodyParser from 'body-parser'
 import request from 'request'
+import menubot from 'menubot'
 
 import { FIREBASE_URL } from './config'
 
@@ -52,7 +53,11 @@ function getDataTimer () {
         console.log(`setting time[ ${count++} ] : ${res[data].hookTime}, hook term: ${(res[data].hookTerm === '0') ? 'no term' : res[data].hookTerm}`)
         if (checkTimeToHome(date)) {
           if (currentTime === res[data].hookTime || checkHookTerm(currentTime, res[data].hookTime, res[data].hookTerm)) {
-            sendMessage(res[data].id, res[data].name, res[data].image, res[data].data)
+            if (res[data].hookType === 'dooray-message') {
+              sendMessage(res[data].id, res[data].name, res[data].image, res[data].data)
+            } else if (res[data].hookType === 'dooray-menu') {
+              sendMenu(res[data].id, res[data].name, res[data].image, res[data].hookMenuType, res[data].data)
+            }
           }
         }
       }
@@ -74,32 +79,35 @@ function checkTimeToHome (date) {
 }
 
 function checkHookTerm (currentTime, hookTime, hookTerm) {
-  const term0 = Number(hookTime.split(':')[1])
-  const term1 = Number(hookTime.split(':')[1]) % 10
-  const term2 = (Number(hookTime.split(':')[1]) + 5) % 10
-  const term3 = (Number(hookTime.split(':')[1]) + 15) % 60
-  const term4 = (Number(hookTime.split(':')[1]) + 30) % 60
-  const term5 = (Number(hookTime.split(':')[1]) + 45) % 60
+  const currentMin = Number(currentTime.split(':')[1])
+  const hookMin = Number(hookTime.split(':')[1])
+
+  const term0 = hookMin
+  const term1 = hookMin % 10
+  const term2 = (hookMin + 5) % 10
+  const term3 = (hookMin + 15) % 60
+  const term4 = (hookMin + 30) % 60
+  const term5 = (hookMin + 45) % 60
 
   if (Number(hookTerm) === 5) {
-    if (Number(currentTime.split(':')[1]) % 10 === term1 || Number(currentTime.split(':')[1]) % 10 === term2) {
+    if (currentMin % 10 === term1 || currentMin % 10 === term2) {
       return true
     }
   } else if (Number(hookTerm) === 10) {
-    if (Number(currentTime.split(':')[1]) % 10 === term1) {
+    if (currentMin % 10 === term1) {
       return true
     }
   } else if (Number(hookTerm) === 15) {
-    if (Number(currentTime.split(':')[1]) === term0 || Number(currentTime.split(':')[1]) === term3 ||
-        Number(currentTime.split(':')[1]) === term4 || Number(currentTime.split(':')[1]) === term5) {
+    if (currentMin === term0 || currentMin === term3 ||
+        currentMin === term4 || currentMin === term5) {
       return true
     }
   } else if (Number(hookTerm) === 30) {
-    if (Number(currentTime.split(':')[1]) === term0 || Number(currentTime.split(':')[1]) === term4) {
+    if (currentMin === term0 || currentMin === term4) {
       return true
     }
   } else if (Number(hookTerm) === 60) {
-    if (Number(currentTime.split(':')[1]) === term0) {
+    if (currentMin === term0) {
       return true
     }
   }
@@ -140,4 +148,17 @@ function sendMessage (hookId, botName, botIconImage, data) {
       console.log('success')
     }
   })
+}
+
+function sendMenu (hookId, botName, botIconImage, menuType, data) {
+  menubot.sendMenu(hookId, menuType, {
+    src: './img/all_menu/menu.png',
+    dst: './img/daily_menu/menu_part.png'
+  }, {
+    botName,
+    botIconImage,
+    attachments: [{
+      text: data.text
+    }]
+  });
 }
