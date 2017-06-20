@@ -160,5 +160,5 @@ function sendMenu (hookId, botName, botIconImage, menuType, data) {
     attachments: [{
       text: data.text
     }]
-  });
+  })
 }
