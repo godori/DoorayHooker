@@ -126,7 +126,7 @@ function handleSendMessage (body) {
   const hookId = body.hookId
   const data = body.data
   const botName = body.name
-  const botIconImage = decodeURIComponent(body.image)
+  const botIconImage = body.image
 
   sendMessage(hookId, botName, botIconImage, data)
 }
