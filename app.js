@@ -2,6 +2,7 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import request from 'request'
 import menubot from 'menubot'
+import commitbot from 'commitbot'
 
 import { FIREBASE_URL } from './config'
 
@@ -55,6 +56,8 @@ function getDataTimer () {
           if (currentTime === res[data].hookTime || checkHookTerm(currentTime, res[data].hookTime, res[data].hookTerm)) {
             if (res[data].hookType === 'dooray-message') {
               sendMessage(res[data].id, res[data].name, res[data].image, res[data].data)
+            } if (res[data].hookType === 'dooray-commit') {
+              sendTodayCommit(res[data].id, res[data].name, res[data].image, res[data].data, res[data].githubIds)
             } else if (res[data].hookType === 'dooray-menu') {
               sendMenu(res[data].id, res[data].name, res[data].image, res[data].hookMenuType, res[data].data)
             }
@@ -147,6 +150,42 @@ function sendMessage (hookId, botName, botIconImage, data) {
     } else {
       console.log('success')
     }
+  })
+}
+
+function sendTodayCommit (hookId, botName, botIconImage, data, githubIds) {
+  let result = {}
+
+  githubIds = githubIds.split(',')
+
+  Promise.all(
+    githubIds.map(id => {
+      id = id.trim()
+      return commitbot.checkTodayCommit(id).then(res => {
+        result[id] = res
+      })
+    })
+  ).then(() => {
+    console.log(result)
+    let committers = ''
+    let nonecommitters = ''
+    for (var id in result) {
+      result[id]? committers += id + ', ': nonecommitters += id + ', '
+    }
+
+    committers = committers.trim().slice(0, -1)
+    nonecommitters = nonecommitters.trim().slice(0, -1)
+
+    if (committers) {
+      if (!nonecommitters) {
+        data.text += `\n\n${data.committer}\nToday commit users - ${committers}`
+      } else {
+        data.text += `\n\n${data.committer}\nToday commit users - ${committers}\n\n${data.nonecommitter}\nToday none commit users = ${nonecommitters}`
+      }
+    } else {
+      data.text += `\n\n${data.committer}\nToday none commit users = EVERYONE!!!!`
+    }
+    sendMessage(hookId, botName, botIconImage, data)
   })
 }
 
