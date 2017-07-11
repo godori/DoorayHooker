@@ -18,9 +18,9 @@
   "license": "MIT",
   "dependencies": {
     "body-parser": "^1.16.1",
-    "commitbot": "0.0.3",
+    "commitbot": "0.0.4",
     "express": "^4.14.1",
-    "menubot": "^1.2.8",
+    "menubot": "^1.2.9",
     "request": "^2.79.0"
   },
   "devDependencies": {

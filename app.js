@@ -170,7 +170,7 @@ function sendTodayCommit (hookId, botName, botIconImage, data, githubIds) {
     let committers = ''
     let nonecommitters = ''
     for (var id in result) {
-      result[id]? committers += id + ', ': nonecommitters += id + ', '
+      result[id] ? committers += id + ', ' : nonecommitters += id + ', '
     }
 
     committers = committers.trim().slice(0, -1)
