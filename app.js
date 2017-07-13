@@ -183,7 +183,7 @@ function sendTodayCommit (hookId, botName, botIconImage, data, githubIds) {
         data.text += `\n\n${data.committer}\nToday commit users - ${committers}\n\n${data.nonecommitter}\nToday none commit users = ${nonecommitters}`
       }
     } else {
-      data.text += `\n\n${data.committer}\nToday none commit users = EVERYONE!!!!`
+      data.text += `\n\n${data.nonecommitter}\nToday none commit users = EVERYONE!!!!`
     }
     sendMessage(hookId, botName, botIconImage, data)
   })
