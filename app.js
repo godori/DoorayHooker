@@ -49,7 +49,13 @@ function getDataTimer () {
       const date = new Date()
       const currentTime = (date.getHours() <= 9 ? '0' : '') + date.getHours() + ':' + (date.getMinutes() <= 9 ? '0' : '') + date.getMinutes()
       console.log('current time : ' + currentTime)
-      const res = JSON.parse(response.body)
+      let res = null
+      if (response && response.body) {
+        res = JSON.parse(response.body)
+      } else {
+        console.error('Connection err!')
+        return false
+      }
       for (const data in res) {
         console.log(`setting time[ ${count++} ] : ${res[data].hookTime}, hook term: ${(res[data].hookTerm === '0') ? 'no term' : res[data].hookTerm}`)
         if (checkTimeToHome(date)) {
