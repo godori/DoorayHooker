@@ -52,6 +52,7 @@ function getDataTimer () {
       const currentTime = (date.getHours() <= 9 ? '0' : '') + date.getHours() + ':' + (date.getMinutes() <= 9 ? '0' : '') + date.getMinutes()
       console.log('current time : ' + currentTime)
       let res = null
+
       if (response && response.body) {
         res = JSON.parse(response.body)
       } else {
@@ -62,13 +63,18 @@ function getDataTimer () {
         console.log(`setting time[ ${count++} ] : ${res[data].hookTime}, hook term: ${(res[data].hookTerm === '0') ? 'no term' : res[data].hookTerm}`)
         if (checkTimeToHome(date)) {
           if (currentTime === res[data].hookTime || checkHookTerm(currentTime, res[data].hookTime, res[data].hookTerm)) {
-            if (res[data].hookType === 'dooray-message') {
+            if (res[data].hookType === 'dooray-weekly') {
+              sendTodayEndWeekly(res[data].id, res[data].name, res[data].image, res[data].data)
+            } else if (res[data].hookType === 'dooray-message') {
               sendMessage(res[data].id, res[data].name, res[data].image, res[data].data)
-            } if (res[data].hookType === 'dooray-commit') {
+            } else if (res[data].hookType === 'dooray-commit') {
               sendTodayCommit(res[data].id, res[data].name, res[data].image, res[data].data, res[data].githubIds)
             } else if (res[data].hookType === 'dooray-menu') {
               sendMenu(res[data].id, res[data].name, res[data].image, res[data].hookMenuType, res[data].data)
             }
+          }
+          if (currentTime === '10:00' && res[data].hookType === 'dooray-weekly') {
+            sendTodayStartWeekly(res[data].id, res[data].name, res[data].image, res[data].data)
           }
         }
       }
@@ -159,6 +165,27 @@ function sendMessage (hookId, botName, botIconImage, data) {
       console.log('success')
     }
   })
+}
+
+function sendTodayStartWeekly (hookId, botName, botIconImage, data) {
+  data.text = '오늘의 할 일 : `' + data.text + '`'
+  _weeklyCommonCheck(hookId, botName, botIconImage, data)
+}
+
+function sendTodayEndWeekly (hookId, botName, botIconImage, data) {
+  data.text = '오늘의 할 일 `' + data.text + '` 을(를) 다 하셨나요? 고생하셨습니다 ㅎㅎ'
+  _weeklyCommonCheck(hookId, botName, botIconImage, data)
+}
+
+function _weeklyCommonCheck (hookId, botName, botIconImage, data) {
+  const currentDay = new Date().getDay()
+  if ((data.day === 'monday' && currentDay === 1) ||
+      (data.day === 'tuesday' && currentDay === 2) ||
+      (data.day === 'wednesday' && currentDay === 3) ||
+      (data.day === 'thursday' && currentDay === 4) ||
+      (data.day === 'friday' && currentDay === 5)) {
+    sendMessage(hookId, botName, botIconImage, data)
+  }
 }
 
 function sendTodayCommit (hookId, botName, botIconImage, data, githubIds) {
