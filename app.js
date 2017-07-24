@@ -63,8 +63,8 @@ function getDataTimer () {
         console.log(`setting time[ ${count++} ] : ${res[data].hookTime}, hook term: ${(res[data].hookTerm === '0') ? 'no term' : res[data].hookTerm}`)
         if (checkTimeToHome(date)) {
           if (currentTime === res[data].hookTime || checkHookTerm(currentTime, res[data].hookTime, res[data].hookTerm)) {
-            if (res[data].hookType === 'dooray-weekly') {
-              sendTodayEndWeekly(res[data].id, res[data].name, res[data].image, res[data].data)
+            if (res[data].hookType === 'dooray-weeklist') {
+              sendTodayEndWeeklist(res[data].id, res[data].name, res[data].image, res[data].data)
             } else if (res[data].hookType === 'dooray-message') {
               sendMessage(res[data].id, res[data].name, res[data].image, res[data].data)
             } else if (res[data].hookType === 'dooray-commit') {
@@ -73,8 +73,8 @@ function getDataTimer () {
               sendMenu(res[data].id, res[data].name, res[data].image, res[data].hookMenuType, res[data].data)
             }
           }
-          if (currentTime === '10:00' && res[data].hookType === 'dooray-weekly') {
-            sendTodayStartWeekly(res[data].id, res[data].name, res[data].image, res[data].data)
+          if (currentTime === '10:00' && res[data].hookType === 'dooray-weeklist') {
+            sendTodayStartWeeklist(res[data].id, res[data].name, res[data].image, res[data].data)
           }
         }
       }
@@ -167,17 +167,17 @@ function sendMessage (hookId, botName, botIconImage, data) {
   })
 }
 
-function sendTodayStartWeekly (hookId, botName, botIconImage, data) {
+function sendTodayStartWeeklist (hookId, botName, botIconImage, data) {
   data.text = '오늘의 할 일 : `' + data.text + '`'
-  _weeklyCommonCheck(hookId, botName, botIconImage, data)
+  _weeklistCommonCheck(hookId, botName, botIconImage, data)
 }
 
-function sendTodayEndWeekly (hookId, botName, botIconImage, data) {
+function sendTodayEndWeeklist (hookId, botName, botIconImage, data) {
   data.text = '오늘의 할 일 `' + data.text + '` 을(를) 다 하셨나요? 고생하셨습니다 ㅎㅎ'
-  _weeklyCommonCheck(hookId, botName, botIconImage, data)
+  _weeklistCommonCheck(hookId, botName, botIconImage, data)
 }
 
-function _weeklyCommonCheck (hookId, botName, botIconImage, data) {
+function _weeklistCommonCheck (hookId, botName, botIconImage, data) {
   const currentDay = new Date().getDay()
   if ((data.day === 'monday' && currentDay === 1) ||
       (data.day === 'tuesday' && currentDay === 2) ||
