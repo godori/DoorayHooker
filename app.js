@@ -6,6 +6,8 @@ import commitbot from 'commitbot'
 
 import { FIREBASE_URL } from './config'
 
+const exec = require('child_process').exec
+
 const app = express()
 
 app.use(bodyParser.urlencoded({extended: true}))
@@ -205,5 +207,15 @@ function sendMenu (hookId, botName, botIconImage, menuType, data) {
     attachments: [{
       text: data.text
     }]
+  }, () => {
+    setTimeout(() => {
+      exec('forever stopall; npm run start;', (err, stdout, stderr) => {
+        console.log('stdout: ' + stdout)
+        console.log('stderr: ' + stderr)
+        if (err !== null) {
+          console.log('error: ' + err)
+        }
+      })
+    }, 60000)
   })
 }
