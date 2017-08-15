@@ -245,7 +245,9 @@ function sendTodayCommit (hookId, botName, botIconImage, data, githubIds) {
 }
 
 function sendCulture (hookId, botName, botIconImage, menuType, data) {
-  data.attachments = data.text
+  data.attachments = [{
+    text: data.text
+  }]
 
   Promise.all([culturebot.korean(CULTURE_URL), culturebot.foreign(CULTURE_URL), culturebot.festival(CULTURE_URL)])
     .then((cultureList) => {
