@@ -3,12 +3,14 @@ import bodyParser from 'body-parser'
 import request from 'request'
 import menubot from 'menubot'
 import commitbot from 'commitbot'
+import culturebot from 'culturebot'
 
-import { FIREBASE_URL } from './config'
+import { FIREBASE_URL, CULTURE_URL } from './config'
 
 const exec = require('child_process').exec
-
 const app = express()
+
+let intervalChecker = null
 
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(bodyParser.json())
@@ -31,13 +33,29 @@ app.use((err, req, res, next) => {
   res.status(500).send('Server Error!')
 })
 
+app.route('/turnOff').post((req, res) => {
+  turnOffTheTimer()
+})
+
+app.route('/turnOn').post((req, res) => {
+  turnOnTheTimer()
+})
+
 app.listen(3030, () => {
   console.log('Run to 3030 port.')
-  getDataTimer()
-  setInterval(() => {
-    getDataTimer()
-  }, 60000)
+  turnOnTheTimer()
 })
+
+function turnOnTheTimer () {
+  console.log('turn on the timer!')
+  getDataTimer()
+  intervalChecker = setInterval(() => getDataTimer(), 60000)
+}
+
+function turnOffTheTimer () {
+  console.log('turn off the timer!')
+  clearInterval(intervalChecker)
+}
 
 function getDataTimer () {
   request({
@@ -71,6 +89,8 @@ function getDataTimer () {
               sendTodayCommit(res[data].id, res[data].name, res[data].image, res[data].data, res[data].githubIds)
             } else if (res[data].hookType === 'dooray-menu') {
               sendMenu(res[data].id, res[data].name, res[data].image, res[data].hookMenuType, res[data].data)
+            } else if (res[data].hookType === 'dooray-culture') {
+              sendCulture(res[data].id, res[data].name, res[data].image, res[data].hookMenuType, res[data].data)
             }
           }
           if (currentTime === '10:00' && res[data].hookType === 'dooray-weeklist') {
@@ -222,6 +242,16 @@ function sendTodayCommit (hookId, botName, botIconImage, data, githubIds) {
     }
     sendMessage(hookId, botName, botIconImage, data)
   })
+}
+
+function sendCulture (hookId, botName, botIconImage, menuType, data) {
+  data.attachments = data.text
+
+  Promise.all([culturebot.korean(CULTURE_URL), culturebot.foreign(CULTURE_URL), culturebot.festival(CULTURE_URL)])
+    .then((cultureList) => {
+      data.text = cultureList.join('\n\n')
+    })
+  sendMessage(hookId, botName, botIconImage, menuType, data)
 }
 
 function sendMenu (hookId, botName, botIconImage, menuType, data) {
