@@ -10,8 +10,6 @@ import { FIREBASE_URL, CULTURE_URL } from './config'
 const exec = require('child_process').exec
 const app = express()
 
-let intervalChecker = null
-
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(bodyParser.json())
 
@@ -33,29 +31,11 @@ app.use((err, req, res, next) => {
   res.status(500).send('Server Error!')
 })
 
-app.route('/turnOff').post((req, res) => {
-  turnOffTheTimer()
-})
-
-app.route('/turnOn').post((req, res) => {
-  turnOnTheTimer()
-})
-
 app.listen(3030, () => {
   console.log('Run to 3030 port.')
-  turnOnTheTimer()
-})
-
-function turnOnTheTimer () {
-  console.log('turn on the timer!')
   getDataTimer()
-  intervalChecker = setInterval(() => getDataTimer(), 60000)
-}
-
-function turnOffTheTimer () {
-  console.log('turn off the timer!')
-  clearInterval(intervalChecker)
-}
+  setInterval(() => getDataTimer(), 60000)
+})
 
 function getDataTimer () {
   request({
@@ -77,7 +57,16 @@ function getDataTimer () {
         console.error('Connection err!')
         return false
       }
+
+      if (!res.status) {
+        console.log('<<<    Server was off    >>>')
+        return
+      }
+
       for (const data in res) {
+        if (data === 'status') {
+          continue
+        }
         console.log(`setting time[ ${count++} ] : ${res[data].hookTime}, hook term: ${(res[data].hookTerm === '0') ? 'no term' : res[data].hookTerm}`)
         if (checkTimeToHome(date)) {
           if (currentTime === res[data].hookTime || checkHookTerm(currentTime, res[data].hookTime, res[data].hookTerm)) {
