@@ -5,7 +5,7 @@ import menubot from 'menubot'
 import commitbot from 'commitbot'
 import culturebot from 'culturebot'
 
-import { FIREBASE_URL, CULTURE_URL } from './config'
+import { FIREBASE_URL, CULTURE } from './config'
 
 const exec = require('child_process').exec
 const app = express()
@@ -79,7 +79,7 @@ function getDataTimer () {
             } else if (res[data].hookType === 'dooray-menu') {
               sendMenu(res[data].id, res[data].name, res[data].image, res[data].hookMenuType, res[data].data)
             } else if (res[data].hookType === 'dooray-culture') {
-              sendCulture(res[data].id, res[data].name, res[data].image, res[data].hookMenuType, res[data].data)
+              sendCulture(res[data].id, res[data].name, res[data].image, res[data].data)
             }
           }
           if (currentTime === '10:00' && res[data].hookType === 'dooray-weeklist') {
@@ -233,16 +233,21 @@ function sendTodayCommit (hookId, botName, botIconImage, data, githubIds) {
   })
 }
 
-function sendCulture (hookId, botName, botIconImage, menuType, data) {
+function sendCulture (hookId, botName, botIconImage, data) {
   data.attachments = [{
     text: data.text
   }]
 
-  Promise.all([culturebot.korean(CULTURE_URL), culturebot.foreign(CULTURE_URL), culturebot.festival(CULTURE_URL)])
-    .then((cultureList) => {
-      data.text = cultureList.join('\n\n')
+  Promise.all([culturebot.korean(CULTURE), culturebot.foreign(CULTURE), culturebot.festival(CULTURE)])
+    .then(result => {
+      const cultureList = result[0].concat(result[1]).concat(result[2])
+
+      data.text = ''
+      cultureList.map(function (culture, count) {
+        data.text += `${count + 1}번: ${culture.title}\n날짜: ${culture.date}\n장소: ${culture.place}\n이미지: ${culture.image}\n\n`
+      })
+      sendMessage(hookId, botName, botIconImage, data)
     })
-  sendMessage(hookId, botName, botIconImage, menuType, data)
 }
 
 function sendMenu (hookId, botName, botIconImage, menuType, data) {
