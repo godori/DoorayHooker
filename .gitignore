@@ -100,3 +100,4 @@ config.js
 img/all_menu/*.png
 img/daily_menu/*.png
 .idea
+package-lock.json
